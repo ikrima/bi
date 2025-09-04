@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Intelligence - Stop Drowning in Discord</title>
+    <meta name="description" content="AI that reads your Discord so you don't have to. Get daily insights about what your players really think. Save 10+ hours per week.">
+    
+    <!-- Deploy this to GitHub Pages in 2 minutes -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .problem {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+        
+        .problem h2 {
+            font-size: 36px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .pain-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .pain-point {
+            text-align: center;
+        }
+        
+        .pain-emoji {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .solution {
+            padding: 80px 20px;
+        }
+        
+        .solution h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .digest-preview {
+            background: white;
+            border: 2px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 40px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .digest-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .digest-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .digest-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        
+        .value-props {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .value-prop {
+            font-size: 18px;
+        }
+        
+        .value-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+        
+        .pricing {
+            background: #1a1a1a;
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .price {
+            font-size: 64px;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+        
+        .price-period {
+            font-size: 24px;
+            opacity: 0.8;
+        }
+        
+        .testimonial {
+            background: #f8f9fa;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .testimonial-text {
+            font-size: 24px;
+            font-style: italic;
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .footer {
+            padding: 40px 20px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        
+        .email-form {
+            display: flex;
+            gap: 10px;
+            max-width: 400px;
+            margin: 40px auto;
+        }
+        
+        .email-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e1e4e8;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .email-submit {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .email-submit:hover {
+            background: #5a67d8;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .subtitle { font-size: 18px; }
+            .price { font-size: 48px; }
+            .email-form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Stop Drowning in Discord</h1>
+            <p class="subtitle">AI reads 10,000 messages and tells you what actually matters</p>
+            <a href="#start" class="cta-button">Start Free Trial →</a>
+        </div>
+    </section>
+    
+    <!-- Problem Section -->
+    <section class="problem">
+        <div class="container">
+            <h2>You're Missing Critical Player Feedback</h2>
+            <div class="pain-points">
+                <div class="pain-point">
+                    <div class="pain-emoji">😫</div>
+                    <h3>20 Hours/Week</h3>
+                    <p>Scrolling through Discord trying to understand player sentiment</p>
+                </div>
+                <div class="pain-point">
+                    <div class="pain-emoji">💣</div>
+                    <h3>Issues Explode</h3>
+                    <p>By the time you notice problems, players are already leaving</p>
+                </div>
+                <div class="pain-point">
+                    <div class="pain-emoji">🎯</div>
+                    <h3>Wrong Priorities</h3>
+                    <p>Loudest 1% of players drive decisions instead of silent majority</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Solution Section -->
+    <section class="solution">
+        <div class="container">
+            <h2>Your Daily Intelligence Digest</h2>
+            <p style="text-align: center; font-size: 18px; margin-bottom: 40px;">
+                Every morning at 8 AM, get everything you need to know
+            </p>
+            
+            <div class="digest-preview">
+                <div class="digest-header">
+                    <div class="digest-title">🎮 Player Intelligence - March 15</div>
+                    <div style="color: #666; font-size: 14px;">1,247 messages from 89 players analyzed</div>
+                </div>
+                
+                <div class="digest-item">
+                    <strong>🔴 Urgent:</strong> Multiple crash reports after yesterday's update
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">23 players affected</div>
+                </div>
+                
+                <div class="digest-item">
+                    <strong>📈 Trending Topic:</strong> Players love the new map design
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">156 positive messages</div>
+                </div>
+                
+                <div class="digest-item">
+                    <strong>⚖️ Balance Concern:</strong> Sniper rifle considered overpowered
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">Growing frustration in competitive community</div>
+                </div>
+                
+                <div class="digest-item">
+                    <strong>💡 Feature Request:</strong> Players want custom keybindings
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">Requested by 34 players this week</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Value Props -->
+    <section class="value-props">
+        <div class="value-prop">
+            <span class="value-number">5min</span>
+            Daily time to understand players
+        </div>
+        <div class="value-prop">
+            <span class="value-number">10hrs</span>
+            Saved every week
+        </div>
+        <div class="value-prop">
+            <span class="value-number">24/7</span>
+            Monitoring while you sleep
+        </div>
+        <div class="value-prop">
+            <span class="value-number">100%</span>
+            Coverage of feedback
+        </div>
+    </section>
+    
+    <!-- Testimonial -->
+    <section class="testimonial">
+        <div class="container">
+            <p class="testimonial-text">
+                "We were spending hours every day trying to understand our Discord. Now I check one email and know exactly what needs attention. It's literally saved our game."
+            </p>
+            <p class="testimonial-author">- Sarah Chen, Game Director at Pixel Studios</p>
+        </div>
+    </section>
+    
+    <!-- Pricing -->
+    <section class="pricing">
+        <div class="container">
+            <h2 style="font-size: 36px; margin-bottom: 20px;">Simple Pricing</h2>
+            <div class="price">
+                $499
+                <span class="price-period">/month</span>
+            </div>
+            <p style="font-size: 18px; opacity: 0.9; margin-bottom: 40px;">
+                Unlimited messages • Unlimited users • Cancel anytime
+            </p>
+            <a href="#start" class="cta-button">Start 7-Day Free Trial</a>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="hero" id="start">
+        <div class="container">
+            <h2 style="font-size: 36px; margin-bottom: 20px;">Start Your Free Trial</h2>
+            <p style="font-size: 18px; margin-bottom: 30px;">
+                Get your first digest tomorrow morning
+            </p>
+            
+            <form class="email-form" onsubmit="handleSubmit(event)">
+                <input 
+                    type="email" 
+                    class="email-input" 
+                    placeholder="your@email.com" 
+                    required
+                    id="email"
+                >
+                <button type="submit" class="email-submit">Start Trial</button>
+            </form>
+            
+            <p style="font-size: 14px; opacity: 0.8;">
+                No credit card required • Setup in 5 minutes • Cancel anytime
+            </p>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Player Intelligence. Built by gamers, for gamers.</p>
+            <p style="margin-top: 10px;">
+                <a href="mailto:hello@playerintel.ai" style="color: #667eea;">hello@playerintel.ai</a>
+            </p>
+        </div>
+    </footer>
+    
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            
+            // For MVP: Just save to localStorage and show success
+            // In production: Send to your API
+            
+            const leads = JSON.parse(localStorage.getItem('leads') || '[]');
+            leads.push({
+                email: email,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('leads', JSON.stringify(leads));
+            
+            // Show success message
+            alert(`Thanks! We'll send your first digest to ${email} tomorrow at 8 AM.`);
+            
+            // In production, redirect to Stripe checkout or onboarding
+            // window.location.href = `https://your-api.com/onboard?email=${email}`;
+            
+            // Clear form
+            document.getElementById('email').value = '';
+        }
+        
+        // Simple analytics (replace with PostHog or similar)
+        console.log('Landing page loaded at', new Date().toISOString());
+    </script>
+</body>
+</html>

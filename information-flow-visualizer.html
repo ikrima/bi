@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Information Flow - The Journey from Noise to Knowledge</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: #e1e8ed;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .header {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 200;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 11px;
+            color: #718096;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .pipeline {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1400px;
+            height: 600px;
+        }
+        
+        .stage {
+            position: absolute;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stage:hover {
+            transform: scale(1.05);
+            z-index: 50;
+        }
+        
+        /* Discord Input Stage */
+        .stage-discord {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            height: 300px;
+            background: rgba(88, 101, 242, 0.1);
+            border: 2px solid #5865F2;
+        }
+        
+        /* Embedding Stage */
+        .stage-embedding {
+            left: 250px;
+            top: 30%;
+            width: 180px;
+            height: 250px;
+            background: rgba(100, 200, 255, 0.1);
+            border: 2px solid #64c8ff;
+        }
+        
+        /* Spectral Analysis Stage */
+        .stage-spectral {
+            left: 480px;
+            top: 20%;
+            width: 200px;
+            height: 280px;
+            background: rgba(147, 51, 234, 0.1);
+            border: 2px solid #9333ea;
+        }
+        
+        /* Persona Clustering Stage */
+        .stage-persona {
+            left: 730px;
+            top: 35%;
+            width: 180px;
+            height: 260px;
+            background: rgba(236, 72, 153, 0.1);
+            border: 2px solid #ec4899;
+        }
+        
+        /* Neural Processing Stage */
+        .stage-neural {
+            left: 960px;
+            top: 25%;
+            width: 180px;
+            height: 280px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px solid #22c55e;
+        }
+        
+        /* Insight Output Stage */
+        .stage-insight {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            height: 300px;
+            background: rgba(251, 146, 60, 0.1);
+            border: 2px solid #fb923c;
+        }
+        
+        .stage-label {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stage-content {
+            width: 90%;
+            height: 70%;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .data-stream {
+            position: absolute;
+            font-size: 10px;
+            font-family: monospace;
+            color: rgba(255, 255, 255, 0.3);
+            white-space: nowrap;
+            animation: stream 10s linear infinite;
+        }
+        
+        @keyframes stream {
+            from { transform: translateY(100%); }
+            to { transform: translateY(-100%); }
+        }
+        
+        .flow-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 10px currentColor;
+            pointer-events: none;
+            z-index: 60;
+        }
+        
+        .connection-pipe {
+            position: absolute;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.1) 10%,
+                rgba(255, 255, 255, 0.1) 90%,
+                transparent
+            );
+            transform-origin: left center;
+        }
+        
+        .metrics-display {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px 40px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .metric {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            font-weight: 200;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 11px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .control-panel {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-3px);
+        }
+        
+        button.active {
+            background: rgba(100, 200, 255, 0.3);
+            border-color: #64c8ff;
+        }
+        
+        .transformation-viz {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: #718096;
+            text-align: center;
+        }
+        
+        .bandwidth-indicator {
+            position: absolute;
+            bottom: 10px;
+            width: 80%;
+            left: 10%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .bandwidth-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #fb923c, #ef4444);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .insight-bubble {
+            position: absolute;
+            padding: 10px 15px;
+            background: rgba(251, 146, 60, 0.9);
+            color: #000;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            animation: float-up 3s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes float-up {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            20% {
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Information Flow Pipeline</h1>
+            <p class="subtitle">Watch raw discord messages transform into actionable intelligence</p>
+        </div>
+        
+        <div class="transformation-viz" id="transformation-text">
+            CHAOS → PATTERNS → STRUCTURE → KNOWLEDGE → WISDOM → ACTION
+        </div>
+        
+        <div class="pipeline" id="pipeline">
+            <!-- Discord Input -->
+            <div class="stage stage-discord" id="stage-discord">
+                <div class="stage-label">Discord</div>
+                <div class="stage-content">
+                    <div class="data-stream" style="animation-delay: 0s;">bug report: game crashes when...</div>
+                    <div class="data-stream" style="animation-delay: 2s;">love the new update but...</div>
+                    <div class="data-stream" style="animation-delay: 4s;">can't connect to server...</div>
+                    <div class="data-stream" style="animation-delay: 6s;">amazing gameplay! 10/10...</div>
+                    <div class="data-stream" style="animation-delay: 8s;">nerf the sniper rifle plz...</div>
+                </div>
+                <div class="bandwidth-indicator">
+                    <div class="bandwidth-fill" id="discord-bandwidth"></div>
+                </div>
+            </div>
+            
+            <!-- Embedding -->
+            <div class="stage stage-embedding" id="stage-embedding">
+                <div class="stage-label">Embedding</div>
+                <div class="stage-content">
+                    <canvas id="embedding-viz" width="150" height="180"></canvas>
+                </div>
+                <div class="bandwidth-indicator">
+                    <div class="bandwidth-fill" id="embedding-bandwidth"></div>
+                </div>
+            </div>
+            
+            <!-- Spectral Analysis -->
+            <div class="stage stage-spectral" id="stage-spectral">
+                <div class="stage-label">Spectral</div>
+                <div class="stage-content">
+                    <canvas id="spectral-viz" width="160" height="200"></canvas>
+                </div>
+                <div class="bandwidth-indicator">
+                    <div class="bandwidth-fill" id="spectral-bandwidth"></div>
+                </div>
+            </div>
+            
+            <!-- Persona Clustering -->
+            <div class="stage stage-persona" id="stage-persona">
+                <div class="stage-label">Personas</div>
+                <div class="stage-content">
+                    <canvas id="persona-viz" width="140" height="180"></canvas>
+                </div>
+                <div class="bandwidth-indicator">
+                    <div class="bandwidth-fill" id="persona-bandwidth"></div>
+                </div>
+            </div>
+            
+            <!-- Neural Processing -->
+            <div class="stage stage-neural" id="stage-neural">
+                <div class="stage-label">Neural Net</div>
+                <div class="stage-content">
+                    <canvas id="neural-viz" width="140" height="200"></canvas>
+                </div>
+                <div class="bandwidth-indicator">
+                    <div class="bandwidth-fill" id="neural-bandwidth"></div>
+                </div>
+            </div>
+            
+            <!-- Insight Output -->
+            <div class="stage stage-insight" id="stage-insight">
+                <div class="stage-label">Insights</div>
+                <div class="stage-content" id="insight-content">
+                    <!-- Insights will appear here -->
+                </div>
+                <div class="bandwidth-indicator">
+                    <div class="bandwidth-fill" id="insight-bandwidth"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="metrics-display">
+            <div class="metric">
+                <div class="metric-value" id="throughput">0</div>
+                <div class="metric-label">Messages/sec</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="latency">0ms</div>
+                <div class="metric-label">Latency</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="accuracy">0%</div>
+                <div class="metric-label">Accuracy</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="insights">0</div>
+                <div class="metric-label">Insights Generated</div>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <button onclick="injectMessage()">Inject Message</button>
+            <button onclick="simulateBurst()">Simulate Burst</button>
+            <button onclick="toggleFlow()" id="flow-btn">Pause Flow</button>
+            <button onclick="clearPipeline()">Clear Pipeline</button>
+        </div>
+    </div>
+    
+    <script>
+        // System state
+        let flowing = true;
+        let throughput = 0;
+        let latency = 0;
+        let accuracy = 85;
+        let insightCount = 0;
+        let particles = [];
+        
+        // Connect stages with pipes
+        function createPipes() {
+            const pipeline = document.getElementById('pipeline');
+            const stages = [
+                'stage-discord', 'stage-embedding', 'stage-spectral',
+                'stage-persona', 'stage-neural', 'stage-insight'
+            ];
+            
+            for (let i = 0; i < stages.length - 1; i++) {
+                const stage1 = document.getElementById(stages[i]);
+                const stage2 = document.getElementById(stages[i + 1]);
+                
+                const rect1 = stage1.getBoundingClientRect();
+                const rect2 = stage2.getBoundingClientRect();
+                const pipelineRect = pipeline.getBoundingClientRect();
+                
+                const x1 = rect1.right - pipelineRect.left;
+                const y1 = rect1.top + rect1.height / 2 - pipelineRect.top;
+                const x2 = rect2.left - pipelineRect.left;
+                const y2 = rect2.top + rect2.height / 2 - pipelineRect.top;
+                
+                const pipe = document.createElement('div');
+                pipe.className = 'connection-pipe';
+                
+                const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                pipe.style.width = distance + 'px';
+                pipe.style.left = x1 + 'px';
+                pipe.style.top = y1 + 'px';
+                pipe.style.transform = `rotate(${angle}deg)`;
+                
+                pipeline.appendChild(pipe);
+            }
+        }
+        
+        // Initialize visualizations
+        function initVisualizations() {
+            // Embedding visualization
+            const embeddingCanvas = document.getElementById('embedding-viz');
+            const embCtx = embeddingCanvas.getContext('2d');
+            
+            function drawEmbedding() {
+                embCtx.clearRect(0, 0, 150, 180);
+                embCtx.strokeStyle = 'rgba(100, 200, 255, 0.5)';
+                embCtx.lineWidth = 1;
+                
+                for (let i = 0; i < 20; i++) {
+                    embCtx.beginPath();
+                    embCtx.moveTo(Math.random() * 150, Math.random() * 180);
+                    embCtx.lineTo(Math.random() * 150, Math.random() * 180);
+                    embCtx.stroke();
+                }
+            }
+            
+            // Spectral visualization
+            const spectralCanvas = document.getElementById('spectral-viz');
+            const specCtx = spectralCanvas.getContext('2d');
+            
+            function drawSpectral() {
+                specCtx.clearRect(0, 0, 160, 200);
+                
+                const gradient = specCtx.createLinearGradient(0, 200, 0, 0);
+                gradient.addColorStop(0, 'rgba(147, 51, 234, 0.2)');
+                gradient.addColorStop(1, 'rgba(147, 51, 234, 0.8)');
+                
+                for (let i = 0; i < 32; i++) {
+                    const height = Math.random() * 150 + 20;
+                    specCtx.fillStyle = gradient;
+                    specCtx.fillRect(i * 5, 200 - height, 4, height);
+                }
+            }
+            
+            // Persona visualization
+            const personaCanvas = document.getElementById('persona-viz');
+            const perCtx = personaCanvas.getContext('2d');
+            
+            function drawPersonas() {
+                perCtx.clearRect(0, 0, 140, 180);
+                
+                for (let i = 0; i < 5; i++) {
+                    const x = 30 + (i % 2) * 50 + Math.random() * 20;
+                    const y = 30 + Math.floor(i / 2) * 50 + Math.random() * 20;
+                    const radius = 10 + Math.random() * 10;
+                    
+                    perCtx.beginPath();
+                    perCtx.arc(x, y, radius, 0, Math.PI * 2);
+                    perCtx.fillStyle = `rgba(236, 72, 153, ${0.3 + Math.random() * 0.5})`;
+                    perCtx.fill();
+                    perCtx.strokeStyle = 'rgba(236, 72, 153, 0.8)';
+                    perCtx.stroke();
+                }
+            }
+            
+            // Neural network visualization
+            const neuralCanvas = document.getElementById('neural-viz');
+            const neuCtx = neuralCanvas.getContext('2d');
+            
+            function drawNeural() {
+                neuCtx.clearRect(0, 0, 140, 200);
+                neuCtx.strokeStyle = 'rgba(34, 197, 94, 0.5)';
+                neuCtx.lineWidth = 0.5;
+                
+                // Draw network connections
+                for (let i = 0; i < 30; i++) {
+                    neuCtx.beginPath();
+                    neuCtx.moveTo(Math.random() * 140, Math.random() * 200);
+                    neuCtx.lineTo(Math.random() * 140, Math.random() * 200);
+                    neuCtx.stroke();
+                }
+                
+                // Draw nodes
+                for (let i = 0; i < 15; i++) {
+                    neuCtx.beginPath();
+                    neuCtx.arc(
+                        Math.random() * 140,
+                        Math.random() * 200,
+                        3,
+                        0,
+                        Math.PI * 2
+                    );
+                    neuCtx.fillStyle = 'rgba(34, 197, 94, 0.8)';
+                    neuCtx.fill();
+                }
+            }
+            
+            // Animate all visualizations
+            setInterval(() => {
+                if (flowing) {
+                    drawEmbedding();
+                    drawSpectral();
+                    drawPersonas();
+                    drawNeural();
+                }
+            }, 500);
+        }
+        
+        // Create flowing particles
+        function createFlowParticle() {
+            if (!flowing) return;
+            
+            const pipeline = document.getElementById('pipeline');
+            const particle = document.createElement('div');
+            particle.className = 'flow-particle';
+            particle.style.color = '#5865F2';
+            
+            const startStage = document.getElementById('stage-discord');
+            const rect = startStage.getBoundingClientRect();
+            const pipelineRect = pipeline.getBoundingClientRect();
+            
+            particle.style.left = (rect.right - pipelineRect.left) + 'px';
+            particle.style.top = (rect.top + rect.height / 2 - pipelineRect.top) + 'px';
+            
+            pipeline.appendChild(particle);
+            
+            // Animate through stages
+            const stages = [
+                { id: 'stage-embedding', color: '#64c8ff' },
+                { id: 'stage-spectral', color: '#9333ea' },
+                { id: 'stage-persona', color: '#ec4899' },
+                { id: 'stage-neural', color: '#22c55e' },
+                { id: 'stage-insight', color: '#fb923c' }
+            ];
+            
+            let stageIndex = 0;
+            
+            function moveToNextStage() {
+                if (stageIndex >= stages.length) {
+                    particle.remove();
+                    generateInsight();
+                    return;
+                }
+                
+                const stage = document.getElementById(stages[stageIndex].id);
+                const rect = stage.getBoundingClientRect();
+                const pipelineRect = pipeline.getBoundingClientRect();
+                
+                particle.style.transition = 'all 0.5s ease';
+                particle.style.left = (rect.left + rect.width / 2 - pipelineRect.left) + 'px';
+                particle.style.top = (rect.top + rect.height / 2 - pipelineRect.top) + 'px';
+                particle.style.color = stages[stageIndex].color;
+                
+                // Update bandwidth
+                const bandwidth = document.getElementById(stages[stageIndex].id.split('-')[1] + '-bandwidth');
+                bandwidth.style.width = (30 + Math.random() * 70) + '%';
+                setTimeout(() => bandwidth.style.width = '0%', 1000);
+                
+                stageIndex++;
+                setTimeout(moveToNextStage, 600);
+            }
+            
+            moveToNextStage();
+        }
+        
+        // Generate insights
+        function generateInsight() {
+            insightCount++;
+            const insights = [
+                'Casual players prefer gradual difficulty curves',
+                'Bug reports correlate with new feature releases',
+                'Social features increase retention by 34%',
+                'Peak frustration occurs during boss fights',
+                'Tutorial completion predicts long-term engagement'
+            ];
+            
+            const insight = insights[Math.floor(Math.random() * insights.length)];
+            
+            // Add to insight stage
+            const content = document.getElementById('insight-content');
+            const bubble = document.createElement('div');
+            bubble.className = 'insight-bubble';
+            bubble.textContent = insight;
+            bubble.style.top = Math.random() * 150 + 'px';
+            bubble.style.left = Math.random() * 100 + 'px';
+            
+            content.appendChild(bubble);
+            
+            setTimeout(() => bubble.remove(), 3000);
+            
+            updateMetrics();
+        }
+        
+        // Update metrics
+        function updateMetrics() {
+            throughput = 3 + Math.floor(Math.random() * 5);
+            latency = 50 + Math.floor(Math.random() * 100);
+            accuracy = Math.min(100, accuracy + (Math.random() - 0.3) * 2);
+            
+            document.getElementById('throughput').textContent = throughput;
+            document.getElementById('latency').textContent = latency + 'ms';
+            document.getElementById('accuracy').textContent = Math.floor(accuracy) + '%';
+            document.getElementById('insights').textContent = insightCount;
+        }
+        
+        // Control functions
+        function injectMessage() {
+            createFlowParticle();
+            updateMetrics();
+        }
+        
+        function simulateBurst() {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => createFlowParticle(), i * 200);
+            }
+        }
+        
+        function toggleFlow() {
+            flowing = !flowing;
+            document.getElementById('flow-btn').textContent = flowing ? 'Pause Flow' : 'Resume Flow';
+        }
+        
+        function clearPipeline() {
+            document.querySelectorAll('.flow-particle').forEach(p => p.remove());
+            document.querySelectorAll('.insight-bubble').forEach(b => b.remove());
+            insightCount = 0;
+            updateMetrics();
+        }
+        
+        // Initialize
+        createPipes();
+        initVisualizations();
+        updateMetrics();
+        
+        // Start automatic flow
+        setInterval(() => {
+            if (flowing && Math.random() > 0.5) {
+                createFlowParticle();
+            }
+        }, 2000);
+        
+        // Initial particles
+        setTimeout(() => {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => createFlowParticle(), i * 1000);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

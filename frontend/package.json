@@ -1,0 +1,9 @@
+{
+  "name": "player-intel-frontend",
+  "version": "1.0.0",
+  "dependencies": {
+    "shadow-cljs": "^2.26.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

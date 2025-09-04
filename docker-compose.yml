@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: player_intel
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  ml-service:
+    build: ./backend/ml
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379
+
+  api:
+    build: ./backend/api
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://admin:secret@postgres:5432/player_intel
+      ML_SERVICE_URL: http://ml-service:8000
+    depends_on:
+      - postgres
+      - ml-service
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend/src:/app/src
+
+volumes:
+  postgres_data:

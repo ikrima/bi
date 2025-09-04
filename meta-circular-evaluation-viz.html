@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta-Circular Evaluation - Seeing the System Think</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            position: relative;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 200;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #666;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .evaluation-space {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .circular-system {
+            width: 600px;
+            height: 600px;
+            position: relative;
+        }
+        
+        .orbit {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .orbit-1 { width: 150px; height: 150px; }
+        .orbit-2 { width: 300px; height: 300px; }
+        .orbit-3 { width: 450px; height: 450px; }
+        .orbit-4 { width: 600px; height: 600px; }
+        
+        .core {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #000;
+            font-weight: 600;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+            z-index: 10;
+        }
+        
+        .thought-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(100, 200, 255, 0.8), rgba(100, 200, 255, 0.2));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .thought-node:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 30px rgba(100, 200, 255, 0.8);
+        }
+        
+        .developer-node {
+            background: radial-gradient(circle, rgba(255, 150, 100, 0.8), rgba(255, 150, 100, 0.2));
+        }
+        
+        .feedback-node {
+            background: radial-gradient(circle, rgba(100, 255, 150, 0.8), rgba(100, 255, 150, 0.2));
+        }
+        
+        .learning-node {
+            background: radial-gradient(circle, rgba(255, 100, 255, 0.8), rgba(255, 100, 255, 0.2));
+        }
+        
+        .thought-connection {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+        }
+        
+        .pulse-ring {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: pulse-expand 2s infinite;
+        }
+        
+        @keyframes pulse-expand {
+            0% {
+                width: 80px;
+                height: 80px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                opacity: 0;
+            }
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .info-title {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #64b5f6;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .info-label {
+            color: #666;
+        }
+        
+        .info-value {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .thought-stream {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .thought-message {
+            font-size: 11px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .thought-message.query { border-color: #64b5f6; }
+        .thought-message.evaluation { border-color: #ffb74d; }
+        .thought-message.learning { border-color: #81c784; }
+        .thought-message.insight { border-color: #ba68c8; }
+        
+        .control-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-3px);
+        }
+        
+        .learning-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .mirror-reflection {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0.3;
+            transform: scaleY(-1);
+            filter: blur(2px);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Meta-Circular Evaluation</h1>
+            <p class="subtitle">The system observes itself thinking, learning from its own learning</p>
+        </div>
+        
+        <div class="evaluation-space">
+            <div class="circular-system" id="circular-system">
+                <div class="orbit orbit-1"></div>
+                <div class="orbit orbit-2"></div>
+                <div class="orbit orbit-3"></div>
+                <div class="orbit orbit-4"></div>
+                
+                <div class="core" id="core">SELF</div>
+                <div class="pulse-ring"></div>
+                
+                <div class="mirror-reflection" id="mirror"></div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-title">Evaluation Metrics</div>
+            <div class="info-item">
+                <span class="info-label">Recursion Depth</span>
+                <span class="info-value" id="recursion-depth">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Self-Improvement Rate</span>
+                <span class="info-value" id="improvement-rate">0%</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Feedback Loops Active</span>
+                <span class="info-value" id="feedback-loops">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Learning Velocity</span>
+                <span class="info-value" id="learning-velocity">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Metacognition Level</span>
+                <span class="info-value" id="metacognition">0</span>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <button onclick="initiateQuery()">Developer Query</button>
+            <button onclick="triggerEvaluation()">Evaluate Self</button>
+            <button onclick="createFeedbackLoop()">Create Loop</button>
+            <button onclick="toggleAutoMode()" id="auto-btn">Auto Mode: OFF</button>
+        </div>
+        
+        <div class="thought-stream" id="thought-stream">
+            <!-- Thoughts will appear here -->
+        </div>
+    </div>
+    
+    <script>
+        // System state
+        let nodes = [];
+        let connections = [];
+        let recursionDepth = 0;
+        let improvementRate = 0;
+        let feedbackLoops = 0;
+        let learningVelocity = 0;
+        let metacognitionLevel = 0;
+        let autoMode = false;
+        let thoughtId = 0;
+        
+        // Initialize system
+        function initSystem() {
+            createInitialNodes();
+            setInterval(updateSystem, 100);
+        }
+        
+        function createInitialNodes() {
+            const system = document.getElementById('circular-system');
+            const orbits = [
+                { radius: 75, count: 3, type: 'developer-node' },
+                { radius: 150, count: 5, type: 'thought-node' },
+                { radius: 225, count: 7, type: 'feedback-node' },
+                { radius: 300, count: 4, type: 'learning-node' }
+            ];
+            
+            orbits.forEach((orbit, orbitIndex) => {
+                for (let i = 0; i < orbit.count; i++) {
+                    const angle = (i / orbit.count) * Math.PI * 2;
+                    const x = 300 + Math.cos(angle) * orbit.radius;
+                    const y = 300 + Math.sin(angle) * orbit.radius;
+                    
+                    const node = document.createElement('div');
+                    node.className = `thought-node ${orbit.type}`;
+                    node.style.left = x + 'px';
+                    node.style.top = y + 'px';
+                    node.id = `node-${thoughtId++}`;
+                    
+                    // Add label
+                    if (orbit.type === 'developer-node') {
+                        node.textContent = 'DEV';
+                    } else if (orbit.type === 'thought-node') {
+                        node.textContent = 'T' + i;
+                    } else if (orbit.type === 'feedback-node') {
+                        node.textContent = 'F' + i;
+                    } else {
+                        node.textContent = 'L' + i;
+                    }
+                    
+                    // Make it orbit
+                    node.dataset.orbit = orbitIndex;
+                    node.dataset.angle = angle;
+                    node.dataset.radius = orbit.radius;
+                    
+                    system.appendChild(node);
+                    nodes.push(node);
+                    
+                    // Add click handler
+                    node.addEventListener('click', () => nodeClicked(node));
+                }
+            });
+        }
+        
+        function updateSystem() {
+            // Rotate nodes
+            nodes.forEach(node => {
+                const angle = parseFloat(node.dataset.angle) + 0.005 * (4 - parseInt(node.dataset.orbit));
+                const radius = parseFloat(node.dataset.radius);
+                
+                const x = 300 + Math.cos(angle) * radius;
+                const y = 300 + Math.sin(angle) * radius;
+                
+                node.style.left = x + 'px';
+                node.style.top = y + 'px';
+                node.dataset.angle = angle;
+                
+                // Pulse occasionally
+                if (Math.random() > 0.995) {
+                    pulseNode(node);
+                }
+            });
+            
+            // Update metrics with slight variations
+            if (feedbackLoops > 0) {
+                improvementRate = Math.min(100, improvementRate + Math.random() * 0.5);
+                learningVelocity = Math.min(999, learningVelocity + Math.random() * 2);
+                metacognitionLevel = Math.min(10, metacognitionLevel + Math.random() * 0.02);
+            }
+            
+            updateMetrics();
+        }
+        
+        function pulseNode(node) {
+            node.style.transform = 'scale(1.5)';
+            node.style.boxShadow = '0 0 30px rgba(255, 255, 255, 0.8)';
+            
+            setTimeout(() => {
+                node.style.transform = 'scale(1)';
+                node.style.boxShadow = 'none';
+            }, 500);
+        }
+        
+        function nodeClicked(node) {
+            // Create connection to core
+            createConnection(node, document.getElementById('core'));
+            
+            // Add thought
+            const type = node.className.includes('developer') ? 'query' :
+                       node.className.includes('feedback') ? 'evaluation' :
+                       node.className.includes('learning') ? 'learning' : 'insight';
+            
+            addThought(type, `Node ${node.textContent} activated - processing...`);
+            
+            // Update metrics
+            recursionDepth++;
+            updateMetrics();
+        }
+        
+        function createConnection(node1, node2) {
+            const system = document.getElementById('circular-system');
+            const connection = document.createElement('div');
+            connection.className = 'thought-connection';
+            
+            const rect1 = node1.getBoundingClientRect();
+            const rect2 = node2.getBoundingClientRect();
+            const systemRect = system.getBoundingClientRect();
+            
+            const x1 = rect1.left - systemRect.left + rect1.width / 2;
+            const y1 = rect1.top - systemRect.top + rect1.height / 2;
+            const x2 = rect2.left - systemRect.left + rect2.width / 2;
+            const y2 = rect2.top - systemRect.top + rect2.height / 2;
+            
+            const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            
+            connection.style.width = distance + 'px';
+            connection.style.left = x1 + 'px';
+            connection.style.top = y1 + 'px';
+            connection.style.transform = `rotate(${angle}deg)`;
+            
+            system.appendChild(connection);
+            connections.push(connection);
+            
+            // Fade out after a moment
+            setTimeout(() => {
+                connection.style.opacity = '0';
+                setTimeout(() => connection.remove(), 1000);
+            }, 2000);
+            
+            // Create particle flow
+            createParticleFlow(x1, y1, x2, y2);
+        }
+        
+        function createParticleFlow(x1, y1, x2, y2) {
+            const system = document.getElementById('circular-system');
+            const particle = document.createElement('div');
+            particle.className = 'learning-particle';
+            particle.style.left = x1 + 'px';
+            particle.style.top = y1 + 'px';
+            
+            system.appendChild(particle);
+            
+            // Animate to destination
+            const duration = 1000;
+            const startTime = Date.now();
+            
+            function animateParticle() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const x = x1 + (x2 - x1) * progress;
+                const y = y1 + (y2 - y1) * progress;
+                
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.opacity = 1 - progress * 0.5;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateParticle);
+                } else {
+                    particle.remove();
+                }
+            }
+            
+            animateParticle();
+        }
+        
+        function initiateQuery() {
+            addThought('query', 'Developer: "How would players react to this change?"');
+            
+            // Trigger cascade of evaluations
+            setTimeout(() => {
+                addThought('evaluation', 'System: Evaluating query intent...');
+                recursionDepth++;
+            }, 500);
+            
+            setTimeout(() => {
+                addThought('evaluation', 'System: Accessing previous similar queries...');
+                createFeedbackLoop();
+            }, 1000);
+            
+            setTimeout(() => {
+                addThought('learning', 'System: Pattern recognized - adjusting response model');
+                improvementRate += 5;
+            }, 1500);
+            
+            setTimeout(() => {
+                addThought('insight', 'System: Generated response with 94% confidence');
+            }, 2000);
+            
+            // Visual feedback
+            const core = document.getElementById('core');
+            core.style.animation = 'pulse 0.5s';
+            setTimeout(() => core.style.animation = '', 500);
+            
+            updateMetrics();
+        }
+        
+        function triggerEvaluation() {
+            recursionDepth++;
+            addThought('evaluation', `Self-evaluation initiated at depth ${recursionDepth}`);
+            
+            // Create connections between random nodes
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const node1 = nodes[Math.floor(Math.random() * nodes.length)];
+                    const node2 = nodes[Math.floor(Math.random() * nodes.length)];
+                    if (node1 !== node2) {
+                        createConnection(node1, node2);
+                    }
+                }, i * 300);
+            }
+            
+            // Update learning metrics
+            learningVelocity += 50;
+            metacognitionLevel += 0.5;
+            updateMetrics();
+        }
+        
+        function createFeedbackLoop() {
+            feedbackLoops++;
+            addThought('learning', `Feedback loop ${feedbackLoops} established`);
+            
+            // Create visual loop
+            const system = document.getElementById('circular-system');
+            const loop = document.createElement('div');
+            loop.className = 'orbit';
+            loop.style.width = (200 + feedbackLoops * 50) + 'px';
+            loop.style.height = (200 + feedbackLoops * 50) + 'px';
+            loop.style.border = '2px solid rgba(100, 255, 100, 0.5)';
+            loop.style.animation = `rotate ${5 + feedbackLoops}s linear infinite`;
+            
+            system.appendChild(loop);
+            
+            setTimeout(() => {
+                loop.style.opacity = '0';
+                setTimeout(() => loop.remove(), 1000);
+            }, 5000);
+            
+            updateMetrics();
+        }
+        
+        function addThought(type, message) {
+            const stream = document.getElementById('thought-stream');
+            const thought = document.createElement('div');
+            thought.className = `thought-message ${type}`;
+            thought.textContent = message;
+            
+            stream.insertBefore(thought, stream.firstChild);
+            
+            // Keep only last 10 thoughts
+            while (stream.children.length > 10) {
+                stream.removeChild(stream.lastChild);
+            }
+        }
+        
+        function updateMetrics() {
+            document.getElementById('recursion-depth').textContent = recursionDepth;
+            document.getElementById('improvement-rate').textContent = improvementRate.toFixed(1) + '%';
+            document.getElementById('feedback-loops').textContent = feedbackLoops;
+            document.getElementById('learning-velocity').textContent = Math.floor(learningVelocity);
+            document.getElementById('metacognition').textContent = metacognitionLevel.toFixed(2);
+        }
+        
+        function toggleAutoMode() {
+            autoMode = !autoMode;
+            document.getElementById('auto-btn').textContent = 'Auto Mode: ' + (autoMode ? 'ON' : 'OFF');
+            
+            if (autoMode) {
+                runAutoMode();
+            }
+        }
+        
+        function runAutoMode() {
+            if (!autoMode) return;
+            
+            const actions = [initiateQuery, triggerEvaluation, createFeedbackLoop];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            action();
+            
+            setTimeout(runAutoMode, 2000 + Math.random() * 3000);
+        }
+        
+        // Add rotation animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes rotate {
+                from { transform: translate(-50%, -50%) rotate(0deg); }
+                to { transform: translate(-50%, -50%) rotate(360deg); }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: translate(-50%, -50%) scale(1); }
+                50% { transform: translate(-50%, -50%) scale(1.2); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize
+        initSystem();
+        
+        // Start with a demo
+        setTimeout(() => {
+            addThought('insight', 'System initialized - meta-circular evaluation ready');
+            initiateQuery();
+        }, 1000);
+    </script>
+</body>
+</html>

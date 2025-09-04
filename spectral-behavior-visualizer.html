@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectral Behavior Decomposition - Living System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #1a202c;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+        
+        .panel h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            background: #f7fafc;
+        }
+        
+        .frequency-bands {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .band {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .band:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .band-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .band-value {
+            font-size: 28px;
+            font-weight: 300;
+            margin: 5px 0;
+        }
+        
+        .band-description {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+        
+        .player-stream {
+            height: 100px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stream-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: flow 3s linear infinite;
+        }
+        
+        @keyframes flow {
+            from { left: -10px; }
+            to { left: 100%; }
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .insight-card h4 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .insight-text {
+            font-size: 18px;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+        
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Spectral Decomposition of Player Behavior</h1>
+        <p class="subtitle">Every player action contains multiple frequencies of meaning - from immediate reactions to deep behavioral patterns</p>
+        
+        <div class="control-panel">
+            <button onclick="simulateEvent('bug')" id="bug-btn">Simulate Bug Report</button>
+            <button onclick="simulateEvent('feature')" id="feature-btn">New Feature Request</button>
+            <button onclick="simulateEvent('rage')" id="rage-btn">Rage Quit Event</button>
+            <button onclick="simulateEvent('praise')" id="praise-btn">Positive Feedback</button>
+            <button onclick="toggleAnimation()" id="animate-btn" class="active">⏸ Pause Flow</button>
+        </div>
+        
+        <div class="visualization-grid">
+            <div class="panel">
+                <h3>Raw Discord Signal</h3>
+                <canvas id="raw-signal"></canvas>
+                <div class="player-stream" id="stream">
+                    <!-- Particles will be added here -->
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>Fourier Transform → Frequency Domain</h3>
+                <canvas id="frequency-spectrum"></canvas>
+                <div class="frequency-bands">
+                    <div class="band" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="band-label">Low Freq</div>
+                        <div class="band-value" id="low-freq">0.0</div>
+                        <div class="band-description">Core Preferences</div>
+                    </div>
+                    <div class="band" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="band-label">Mid Freq</div>
+                        <div class="band-value" id="mid-freq">0.0</div>
+                        <div class="band-description">Weekly Patterns</div>
+                    </div>
+                    <div class="band" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <div class="band-label">High Freq</div>
+                        <div class="band-value" id="high-freq">0.0</div>
+                        <div class="band-description">Instant Reactions</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>Persona Activation Patterns</h3>
+                <canvas id="persona-activation"></canvas>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #718096;">Casual</div>
+                        <div id="casual-activation" style="font-size: 20px; color: #667eea;">0%</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #718096;">Hardcore</div>
+                        <div id="hardcore-activation" style="font-size: 20px; color: #764ba2;">0%</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #718096;">Explorer</div>
+                        <div id="explorer-activation" style="font-size: 20px; color: #f093fb;">0%</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #718096;">Social</div>
+                        <div id="social-activation" style="font-size: 20px; color: #f5576c;">0%</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 10px; color: #718096;">Achiever</div>
+                        <div id="achiever-activation" style="font-size: 20px; color: #fa709a;">0%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>Hodge Decomposition</h3>
+                <canvas id="hodge-decomposition"></canvas>
+                <div style="margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-size: 12px; color: #718096;">Gradient Flow (Improvements)</span>
+                        <span id="gradient-value" style="font-size: 12px; font-weight: 600;">0%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-size: 12px; color: #718096;">Curl (Cyclic Patterns)</span>
+                        <span id="curl-value" style="font-size: 12px; font-weight: 600;">0%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 12px; color: #718096;">Harmonic (Stable Structure)</span>
+                        <span id="harmonic-value" style="font-size: 12px; font-weight: 600;">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <h4>EMERGENT INSIGHT</h4>
+            <p class="insight-text" id="insight-text">
+                The system is learning... As players interact, patterns emerge in the spectral domain that reveal hidden dynamics invisible in the time domain.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        let animationRunning = true;
+        let time = 0;
+        
+        // Initialize canvases
+        const rawCanvas = document.getElementById('raw-signal');
+        const rawCtx = rawCanvas.getContext('2d');
+        const freqCanvas = document.getElementById('frequency-spectrum');
+        const freqCtx = freqCanvas.getContext('2d');
+        const personaCanvas = document.getElementById('persona-activation');
+        const personaCtx = personaCanvas.getContext('2d');
+        const hodgeCanvas = document.getElementById('hodge-decomposition');
+        const hodgeCtx = hodgeCanvas.getContext('2d');
+        
+        // Resize canvases
+        function resizeCanvases() {
+            [rawCanvas, freqCanvas, personaCanvas, hodgeCanvas].forEach(canvas => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            });
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+        
+        // Signal generation
+        let signal = [];
+        let frequencies = { low: 0.3, mid: 0.3, high: 0.4 };
+        let personas = { casual: 0.2, hardcore: 0.2, explorer: 0.2, social: 0.2, achiever: 0.2 };
+        let hodge = { gradient: 0.33, curl: 0.33, harmonic: 0.34 };
+        
+        function generateSignal() {
+            signal = [];
+            for (let i = 0; i < 100; i++) {
+                let value = 
+                    frequencies.low * Math.sin(i * 0.05) * 0.5 +
+                    frequencies.mid * Math.sin(i * 0.2) * 0.3 +
+                    frequencies.high * Math.sin(i * 0.8) * 0.2 +
+                    (Math.random() - 0.5) * 0.1;
+                signal.push(value);
+            }
+        }
+        
+        function drawRawSignal() {
+            rawCtx.clearRect(0, 0, rawCanvas.width, rawCanvas.height);
+            rawCtx.strokeStyle = '#667eea';
+            rawCtx.lineWidth = 2;
+            rawCtx.beginPath();
+            
+            for (let i = 0; i < signal.length; i++) {
+                const x = (i / signal.length) * rawCanvas.width;
+                const y = rawCanvas.height / 2 + signal[i] * rawCanvas.height * 0.3;
+                
+                if (i === 0) rawCtx.moveTo(x, y);
+                else rawCtx.lineTo(x, y);
+            }
+            
+            rawCtx.stroke();
+        }
+        
+        function drawFrequencySpectrum() {
+            freqCtx.clearRect(0, 0, freqCanvas.width, freqCanvas.height);
+            
+            const barWidth = freqCanvas.width / 32;
+            const gradient = freqCtx.createLinearGradient(0, freqCanvas.height, 0, 0);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#f093fb');
+            
+            for (let i = 0; i < 32; i++) {
+                let height;
+                if (i < 4) height = frequencies.low * freqCanvas.height * 0.8;
+                else if (i < 16) height = frequencies.mid * freqCanvas.height * 0.6;
+                else height = frequencies.high * freqCanvas.height * 0.4;
+                
+                height += Math.random() * 20;
+                
+                freqCtx.fillStyle = gradient;
+                freqCtx.fillRect(
+                    i * barWidth + 2,
+                    freqCanvas.height - height,
+                    barWidth - 4,
+                    height
+                );
+            }
+        }
+        
+        function drawPersonaActivation() {
+            personaCtx.clearRect(0, 0, personaCanvas.width, personaCanvas.height);
+            
+            const centerX = personaCanvas.width / 2;
+            const centerY = personaCanvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+            
+            const personaList = Object.entries(personas);
+            const angleStep = (Math.PI * 2) / personaList.length;
+            
+            personaList.forEach(([name, value], index) => {
+                const angle = index * angleStep - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * radius * value;
+                const y = centerY + Math.sin(angle) * radius * value;
+                
+                personaCtx.beginPath();
+                personaCtx.moveTo(centerX, centerY);
+                personaCtx.lineTo(x, y);
+                personaCtx.strokeStyle = `hsla(${index * 60}, 70%, 60%, 0.8)`;
+                personaCtx.lineWidth = 3;
+                personaCtx.stroke();
+                
+                personaCtx.beginPath();
+                personaCtx.arc(x, y, 5, 0, Math.PI * 2);
+                personaCtx.fillStyle = `hsl(${index * 60}, 70%, 60%)`;
+                personaCtx.fill();
+            });
+        }
+        
+        function drawHodgeDecomposition() {
+            hodgeCtx.clearRect(0, 0, hodgeCanvas.width, hodgeCanvas.height);
+            
+            const centerX = hodgeCanvas.width / 2;
+            const centerY = hodgeCanvas.height / 2;
+            
+            // Draw three components as flowing vectors
+            const components = [
+                { name: 'gradient', color: '#667eea', angle: 0 },
+                { name: 'curl', color: '#f093fb', angle: Math.PI * 2 / 3 },
+                { name: 'harmonic', color: '#fa709a', angle: Math.PI * 4 / 3 }
+            ];
+            
+            components.forEach((comp, i) => {
+                const value = hodge[comp.name];
+                const endX = centerX + Math.cos(comp.angle + time * 0.01) * value * 80;
+                const endY = centerY + Math.sin(comp.angle + time * 0.01) * value * 80;
+                
+                hodgeCtx.beginPath();
+                hodgeCtx.moveTo(centerX, centerY);
+                hodgeCtx.lineTo(endX, endY);
+                hodgeCtx.strokeStyle = comp.color;
+                hodgeCtx.lineWidth = 3;
+                hodgeCtx.stroke();
+                
+                // Arrowhead
+                hodgeCtx.beginPath();
+                hodgeCtx.arc(endX, endY, 4, 0, Math.PI * 2);
+                hodgeCtx.fillStyle = comp.color;
+                hodgeCtx.fill();
+            });
+        }
+        
+        function updateValues() {
+            // Smoothly animate values
+            frequencies.low += (Math.random() - 0.5) * 0.02;
+            frequencies.mid += (Math.random() - 0.5) * 0.03;
+            frequencies.high += (Math.random() - 0.5) * 0.05;
+            
+            // Clamp values
+            Object.keys(frequencies).forEach(key => {
+                frequencies[key] = Math.max(0.1, Math.min(1, frequencies[key]));
+            });
+            
+            // Update display
+            document.getElementById('low-freq').textContent = frequencies.low.toFixed(2);
+            document.getElementById('mid-freq').textContent = frequencies.mid.toFixed(2);
+            document.getElementById('high-freq').textContent = frequencies.high.toFixed(2);
+            
+            // Update personas based on frequencies
+            personas.casual = frequencies.low * 0.8 + frequencies.mid * 0.2;
+            personas.hardcore = frequencies.high * 0.7 + frequencies.mid * 0.3;
+            personas.explorer = frequencies.mid * 0.6 + frequencies.low * 0.4;
+            personas.social = frequencies.low * 0.5 + frequencies.high * 0.5;
+            personas.achiever = frequencies.high * 0.6 + frequencies.mid * 0.4;
+            
+            // Normalize personas
+            const sum = Object.values(personas).reduce((a, b) => a + b, 0);
+            Object.keys(personas).forEach(key => {
+                personas[key] = personas[key] / sum;
+                document.getElementById(`${key}-activation`).textContent = 
+                    Math.round(personas[key] * 100) + '%';
+            });
+            
+            // Update Hodge values
+            hodge.gradient = frequencies.high * 0.5 + frequencies.mid * 0.3;
+            hodge.curl = frequencies.mid * 0.6 + frequencies.low * 0.2;
+            hodge.harmonic = frequencies.low * 0.7 + frequencies.mid * 0.2;
+            
+            // Normalize Hodge
+            const hodgeSum = hodge.gradient + hodge.curl + hodge.harmonic;
+            Object.keys(hodge).forEach(key => {
+                hodge[key] = hodge[key] / hodgeSum;
+                document.getElementById(`${key}-value`).textContent = 
+                    Math.round(hodge[key] * 100) + '%';
+            });
+        }
+        
+        function addStreamParticle() {
+            const stream = document.getElementById('stream');
+            const particle = document.createElement('div');
+            particle.className = 'stream-particle';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.background = `hsl(${Math.random() * 60 + 240}, 70%, 60%)`;
+            particle.style.animationDelay = Math.random() * 3 + 's';
+            stream.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 3000);
+        }
+        
+        function animate() {
+            if (animationRunning) {
+                time++;
+                generateSignal();
+                drawRawSignal();
+                drawFrequencySpectrum();
+                drawPersonaActivation();
+                drawHodgeDecomposition();
+                updateValues();
+                
+                if (time % 20 === 0) addStreamParticle();
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        function simulateEvent(type) {
+            const insights = {
+                'bug': 'Bug reports spike high frequencies - immediate frustration detected. Casual players show 3x higher churn risk.',
+                'feature': 'Feature requests resonate in mid-frequencies - evolving meta-game detected. Explorer personas activate strongly.',
+                'rage': 'Rage quit creates harmonic resonance - stable negative pattern forming. Intervention recommended.',
+                'praise': 'Positive feedback strengthens low frequencies - core satisfaction improving. Retention probability up 15%.'
+            };
+            
+            // Adjust frequencies based on event
+            if (type === 'bug') {
+                frequencies.high = Math.min(1, frequencies.high + 0.3);
+                frequencies.low = Math.max(0.1, frequencies.low - 0.1);
+            } else if (type === 'feature') {
+                frequencies.mid = Math.min(1, frequencies.mid + 0.3);
+            } else if (type === 'rage') {
+                frequencies.high = Math.min(1, frequencies.high + 0.4);
+                hodge.harmonic += 0.2;
+            } else if (type === 'praise') {
+                frequencies.low = Math.min(1, frequencies.low + 0.3);
+                frequencies.high = Math.max(0.1, frequencies.high - 0.2);
+            }
+            
+            document.getElementById('insight-text').textContent = insights[type];
+            
+            // Visual feedback
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${type}-btn`).classList.add('active');
+            setTimeout(() => {
+                document.getElementById(`${type}-btn`).classList.remove('active');
+                if (animationRunning) {
+                    document.getElementById('animate-btn').classList.add('active');
+                }
+            }, 1000);
+        }
+        
+        function toggleAnimation() {
+            animationRunning = !animationRunning;
+            const btn = document.getElementById('animate-btn');
+            btn.textContent = animationRunning ? '⏸ Pause Flow' : '▶ Resume Flow';
+            btn.classList.toggle('active');
+        }
+        
+        // Start animation
+        animate();
+        
+        // Add initial particles
+        for (let i = 0; i < 5; i++) {
+            setTimeout(() => addStreamParticle(), i * 600);
+        }
+    </script>
+</body>
+</html>

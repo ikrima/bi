@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Intelligence System - Living Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e1e8ed;
+            overflow-x: hidden;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 20px;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+        
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: currentColor;
+            opacity: 0.6;
+        }
+        
+        .main-content {
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 200;
+        }
+        
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #68d391;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 200;
+            margin-bottom: 8px;
+        }
+        
+        .metric-change {
+            font-size: 14px;
+            color: #68d391;
+        }
+        
+        .metric-change.negative {
+            color: #f56565;
+        }
+        
+        .visualization-area {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .main-viz {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            height: 400px;
+            position: relative;
+        }
+        
+        .activity-feed {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+        }
+        
+        .feed-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            color: #a0aec0;
+        }
+        
+        .feed-item {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid;
+            font-size: 13px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .feed-item.query { border-color: #667eea; }
+        .feed-item.learning { border-color: #68d391; }
+        .feed-item.alert { border-color: #f56565; }
+        .feed-item.insight { border-color: #f6ad55; }
+        
+        .feed-timestamp {
+            font-size: 10px;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .neural-network-viz {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .neuron {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.6);
+        }
+        
+        .synapse {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+            transform-origin: left center;
+        }
+        
+        .control-bar {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 8px;
+            color: #e1e8ed;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+        
+        button:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .progress-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .progress-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .progress-title {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .floating-particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo">BONFIRE STUDIOS</div>
+            
+            <div class="nav-item active">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                <span>System Overview</span>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #00d2ff, #3a7bd5);"></div>
+                <span>Spectral Analysis</span>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #68d391, #4ade80);"></div>
+                <span>Persona Insights</span>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #f6ad55, #ed8936);"></div>
+                <span>Tetration Learning</span>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #f56565, #e53e3e);"></div>
+                <span>Query Interface</span>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon" style="background: linear-gradient(135deg, #b794f4, #9f7aea);"></div>
+                <span>Analytics</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title">Player Intelligence System</h1>
+                <div class="status-bar">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>System Active</span>
+                    </div>
+                    <div class="status-indicator">
+                        <span id="current-time">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">System Intelligence</div>
+                    <div class="metric-value" id="intelligence">127.3</div>
+                    <div class="metric-change">↑ 12.5% growth rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Active Personas</div>
+                    <div class="metric-value" id="personas">8</div>
+                    <div class="metric-change">+2 discovered today</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Queries Processed</div>
+                    <div class="metric-value" id="queries">1,247</div>
+                    <div class="metric-change">↑ 34% from yesterday</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Convergence</div>
+                    <div class="metric-value" id="convergence">87%</div>
+                    <div class="metric-change">Approaching optimal</div>
+                </div>
+            </div>
+            
+            <div class="control-bar">
+                <button onclick="simulateActivity()">Simulate Activity</button>
+                <button onclick="triggerLearning()">Trigger Learning Cascade</button>
+                <button onclick="generateInsight()">Generate Insight</button>
+                <button onclick="toggleAutoMode()" id="auto-btn">Enable Auto Mode</button>
+            </div>
+            
+            <div class="visualization-area">
+                <div class="main-viz">
+                    <canvas id="network-canvas" style="width: 100%; height: 100%;"></canvas>
+                    <div class="neural-network-viz" id="neural-viz"></div>
+                </div>
+                
+                <div class="activity-feed">
+                    <div class="feed-title">Live Activity Feed</div>
+                    <div id="feed-container">
+                        <!-- Feed items will be added here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="progress-section">
+                <div class="progress-card">
+                    <div class="progress-title">L1: Direct Learning</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="l1-progress" style="background: linear-gradient(90deg, #667eea, #764ba2); width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-title">L2: Pattern Learning</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="l2-progress" style="background: linear-gradient(90deg, #00d2ff, #3a7bd5); width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-title">L3: Meta-Pattern Learning</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="l3-progress" style="background: linear-gradient(90deg, #68d391, #4ade80); width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="progress-card">
+                    <div class="progress-title">L4: Meta-Meta Learning</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="l4-progress" style="background: linear-gradient(90deg, #f6ad55, #ed8936); width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // System state
+        let systemIntelligence = 127.3;
+        let activePersonas = 8;
+        let queriesProcessed = 1247;
+        let convergence = 87;
+        let autoMode = false;
+        let levelProgress = [65, 42, 28, 15];
+        
+        // Initialize particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${10 + Math.random() * 20}s linear infinite`;
+                container.appendChild(particle);
+            }
+        }
+        
+        // Create floating animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                from { transform: translate(0, 100vh) rotate(0deg); opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                to { transform: translate(100px, -100vh) rotate(360deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize neural network visualization
+        function createNeuralNetwork() {
+            const viz = document.getElementById('neural-viz');
+            
+            // Create layers
+            const layers = [5, 8, 8, 5, 3];
+            const layerPositions = [];
+            
+            layers.forEach((nodeCount, layerIndex) => {
+                const layerNodes = [];
+                const x = (layerIndex / (layers.length - 1)) * 90 + 5;
+                
+                for (let i = 0; i < nodeCount; i++) {
+                    const y = ((i + 1) / (nodeCount + 1)) * 90 + 5;
+                    
+                    const neuron = document.createElement('div');
+                    neuron.className = 'neuron';
+                    neuron.style.left = x + '%';
+                    neuron.style.top = y + '%';
+                    neuron.style.background = `rgba(102, 126, 234, ${0.3 + Math.random() * 0.7})`;
+                    viz.appendChild(neuron);
+                    
+                    layerNodes.push({ x, y, element: neuron });
+                }
+                layerPositions.push(layerNodes);
+            });
+            
+            // Create connections
+            for (let i = 0; i < layers.length - 1; i++) {
+                const currentLayer = layerPositions[i];
+                const nextLayer = layerPositions[i + 1];
+                
+                currentLayer.forEach(node1 => {
+                    nextLayer.forEach(node2 => {
+                        if (Math.random() > 0.6) { // Randomly connect some nodes
+                            const synapse = document.createElement('div');
+                            synapse.className = 'synapse';
+                            
+                            const dx = node2.x - node1.x;
+                            const dy = node2.y - node1.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                            
+                            synapse.style.width = distance + '%';
+                            synapse.style.left = node1.x + '%';
+                            synapse.style.top = node1.y + '%';
+                            synapse.style.transform = `rotate(${angle}deg)`;
+                            synapse.style.opacity = Math.random() * 0.5 + 0.1;
+                            
+                            viz.appendChild(synapse);
+                        }
+                    });
+                });
+            }
+        }
+        
+        // Activity feed
+        function addFeedItem(type, message) {
+            const feed = document.getElementById('feed-container');
+            const item = document.createElement('div');
+            item.className = `feed-item ${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            item.innerHTML = `
+                ${message}
+                <div class="feed-timestamp">${time}</div>
+            `;
+            
+            feed.insertBefore(item, feed.firstChild);
+            
+            // Keep only last 10 items
+            while (feed.children.length > 10) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+        
+        // Simulate system activity
+        function simulateActivity() {
+            // Update metrics
+            systemIntelligence += Math.random() * 10;
+            queriesProcessed += Math.floor(Math.random() * 10) + 1;
+            convergence = Math.min(100, convergence + Math.random() * 2);
+            
+            updateMetrics();
+            
+            // Add activity to feed
+            const activities = [
+                { type: 'query', message: 'Developer query: "Impact of difficulty increase on casual players"' },
+                { type: 'learning', message: 'Pattern detected: Correlation between session length and satisfaction' },
+                { type: 'insight', message: 'New insight: Social features increase retention by 23%' },
+                { type: 'alert', message: 'Alert: Unusual spike in frustration metrics detected' }
+            ];
+            
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            addFeedItem(activity.type, activity.message);
+            
+            // Update progress bars
+            updateProgress();
+            
+            // Animate neurons
+            animateNeurons();
+        }
+        
+        function updateMetrics() {
+            document.getElementById('intelligence').textContent = systemIntelligence.toFixed(1);
+            document.getElementById('personas').textContent = activePersonas;
+            document.getElementById('queries').textContent = queriesProcessed;
+            document.getElementById('convergence').textContent = convergence.toFixed(0) + '%';
+        }
+        
+        function updateProgress() {
+            levelProgress[0] = Math.min(100, levelProgress[0] + Math.random() * 10);
+            levelProgress[1] = Math.min(100, levelProgress[1] + Math.random() * 5);
+            levelProgress[2] = Math.min(100, levelProgress[2] + Math.random() * 3);
+            levelProgress[3] = Math.min(100, levelProgress[3] + Math.random() * 2);
+            
+            document.getElementById('l1-progress').style.width = levelProgress[0] + '%';
+            document.getElementById('l2-progress').style.width = levelProgress[1] + '%';
+            document.getElementById('l3-progress').style.width = levelProgress[2] + '%';
+            document.getElementById('l4-progress').style.width = levelProgress[3] + '%';
+        }
+        
+        function animateNeurons() {
+            const neurons = document.querySelectorAll('.neuron');
+            neurons.forEach(neuron => {
+                if (Math.random() > 0.7) {
+                    neuron.style.background = `rgba(102, 126, 234, ${0.8 + Math.random() * 0.2})`;
+                    neuron.style.transform = 'scale(1.5)';
+                    setTimeout(() => {
+                        neuron.style.background = `rgba(102, 126, 234, ${0.3 + Math.random() * 0.4})`;
+                        neuron.style.transform = 'scale(1)';
+                    }, 500);
+                }
+            });
+        }
+        
+        function triggerLearning() {
+            addFeedItem('learning', 'Learning cascade initiated across all levels');
+            
+            // Boost all progress bars
+            for (let i = 0; i < 4; i++) {
+                levelProgress[i] = Math.min(100, levelProgress[i] + 20);
+            }
+            updateProgress();
+            
+            // Increase intelligence
+            systemIntelligence *= 1.1;
+            updateMetrics();
+            
+            // Visual feedback
+            document.querySelector('.main-viz').style.boxShadow = '0 0 50px rgba(102, 126, 234, 0.5)';
+            setTimeout(() => {
+                document.querySelector('.main-viz').style.boxShadow = 'none';
+            }, 1000);
+        }
+        
+        function generateInsight() {
+            const insights = [
+                'Competitive players prefer skill-based matchmaking over random',
+                'Tutorial completion correlates with 40% higher retention',
+                'Weekend players show different behavior patterns than weekday players',
+                'Bug reports spike after major updates, then normalize within 48 hours',
+                'Social features usage predicts long-term player engagement'
+            ];
+            
+            const insight = insights[Math.floor(Math.random() * insights.length)];
+            addFeedItem('insight', `Generated insight: ${insight}`);
+            
+            // Discover new persona occasionally
+            if (Math.random() > 0.7) {
+                activePersonas++;
+                updateMetrics();
+                addFeedItem('insight', 'New persona discovered through clustering analysis');
+            }
+        }
+        
+        function toggleAutoMode() {
+            autoMode = !autoMode;
+            const btn = document.getElementById('auto-btn');
+            btn.textContent = autoMode ? 'Disable Auto Mode' : 'Enable Auto Mode';
+            
+            if (autoMode) {
+                autoActivity();
+            }
+        }
+        
+        function autoActivity() {
+            if (!autoMode) return;
+            
+            simulateActivity();
+            
+            if (Math.random() > 0.8) generateInsight();
+            if (Math.random() > 0.9) triggerLearning();
+            
+            setTimeout(autoActivity, 2000 + Math.random() * 3000);
+        }
+        
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        
+        // Initialize
+        createParticles();
+        createNeuralNetwork();
+        updateMetrics();
+        updateClock();
+        
+        // Initial activity
+        setTimeout(() => {
+            addFeedItem('query', 'System initialized successfully');
+            simulateActivity();
+        }, 1000);
+        
+        // Canvas visualization
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        function drawVisualization() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw a simple waveform
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let x = 0; x < canvas.width; x += 5) {
+                const y = canvas.height / 2 + Math.sin(x * 0.02 + Date.now() * 0.001) * 50;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            
+            ctx.stroke();
+            
+            requestAnimationFrame(drawVisualization);
+        }
+        drawVisualization();
+    </script>
+</body>
+</html>

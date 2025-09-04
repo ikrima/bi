@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persona Constellation - Living Player Archetypes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #universe {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #0a0e27 0%, #000 70%);
+        }
+        
+        .header {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 200;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #718096;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        #constellation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+        }
+        
+        .persona-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 11px;
+            text-align: center;
+        }
+        
+        .persona-core {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px currentColor;
+        }
+        
+        .persona-label {
+            position: absolute;
+            bottom: -20px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        
+        .connection-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+        }
+        
+        .data-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #fff;
+            pointer-events: none;
+        }
+        
+        .control-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .info-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #00d2ff;
+        }
+        
+        .info-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .info-stat-label {
+            color: #718096;
+        }
+        
+        .info-stat-value {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .trait-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+        
+        .trait-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+        
+        .message-stream {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 300px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            overflow-y: auto;
+        }
+        
+        .message {
+            font-size: 11px;
+            margin-bottom: 8px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .message-persona {
+            color: #00d2ff;
+            font-weight: 500;
+        }
+        
+        .orbital-ring {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        @keyframes orbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="universe"></div>
+    
+    <div class="header">
+        <h1>PERSONA CONSTELLATION</h1>
+        <p class="subtitle">Self-Organizing Player Archetypes in Embedding Space</p>
+    </div>
+    
+    <div id="constellation"></div>
+    
+    <div class="info-panel">
+        <div class="info-title" id="selected-persona">System Overview</div>
+        <div class="info-stat">
+            <span class="info-stat-label">Active Personas</span>
+            <span class="info-stat-value" id="active-count">5</span>
+        </div>
+        <div class="info-stat">
+            <span class="info-stat-label">Total Interactions</span>
+            <span class="info-stat-value" id="total-interactions">0</span>
+        </div>
+        <div class="info-stat">
+            <span class="info-stat-label">Clustering Quality</span>
+            <span class="info-stat-value" id="cluster-quality">0.00</span>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <div class="info-stat">
+                <span class="info-stat-label">Engagement</span>
+                <span class="info-stat-value" id="engagement-val">0%</span>
+            </div>
+            <div class="trait-bar">
+                <div class="trait-fill" id="engagement-bar" style="background: #00d2ff; width: 0%"></div>
+            </div>
+            
+            <div class="info-stat">
+                <span class="info-stat-label">Satisfaction</span>
+                <span class="info-stat-value" id="satisfaction-val">0%</span>
+            </div>
+            <div class="trait-bar">
+                <div class="trait-fill" id="satisfaction-bar" style="background: #68d391; width: 0%"></div>
+            </div>
+            
+            <div class="info-stat">
+                <span class="info-stat-label">Frustration</span>
+                <span class="info-stat-value" id="frustration-val">0%</span>
+            </div>
+            <div class="trait-bar">
+                <div class="trait-fill" id="frustration-bar" style="background: #f56565; width: 0%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="message-stream" id="message-stream">
+        <div style="font-size: 10px; color: #718096; margin-bottom: 10px;">LIVE INTERACTION FEED</div>
+    </div>
+    
+    <div class="control-panel">
+        <button onclick="simulateInteraction()">Simulate Interaction</button>
+        <button onclick="triggerReorganization()">Reorganize Constellation</button>
+        <button onclick="toggleAutoMode()" id="auto-btn">Start Auto Mode</button>
+        <button onclick="addNewPersona()">Discover New Persona</button>
+    </div>
+    
+    <script>
+        // Persona definitions
+        const personas = [
+            { id: 'casual', name: 'Casual', color: '#00d2ff', x: 300, y: 150, engagement: 60, satisfaction: 80, frustration: 20 },
+            { id: 'hardcore', name: 'Hardcore', color: '#f56565', x: 450, y: 250, engagement: 95, satisfaction: 60, frustration: 40 },
+            { id: 'explorer', name: 'Explorer', color: '#68d391', x: 300, y: 450, engagement: 75, satisfaction: 85, frustration: 15 },
+            { id: 'social', name: 'Social', color: '#f6ad55', x: 150, y: 250, engagement: 80, satisfaction: 75, frustration: 25 },
+            { id: 'achiever', name: 'Achiever', color: '#b794f4', x: 400, y: 350, engagement: 85, satisfaction: 70, frustration: 30 }
+        ];
+        
+        let connections = [];
+        let particles = [];
+        let totalInteractions = 0;
+        let autoMode = false;
+        let selectedPersona = null;
+        
+        // Initialize constellation
+        function initConstellation() {
+            const constellation = document.getElementById('constellation');
+            
+            // Add orbital rings
+            for (let i = 1; i <= 3; i++) {
+                const ring = document.createElement('div');
+                ring.className = 'orbital-ring';
+                ring.style.width = ring.style.height = (200 * i) + 'px';
+                ring.style.left = `calc(50% - ${100 * i}px)`;
+                ring.style.top = `calc(50% - ${100 * i}px)`;
+                constellation.appendChild(ring);
+            }
+            
+            // Create persona nodes
+            personas.forEach(persona => {
+                const node = document.createElement('div');
+                node.className = 'persona-node';
+                node.id = `persona-${persona.id}`;
+                node.style.left = persona.x + 'px';
+                node.style.top = persona.y + 'px';
+                
+                const core = document.createElement('div');
+                core.className = 'persona-core';
+                core.style.background = `radial-gradient(circle, ${persona.color}88, ${persona.color}22)`;
+                core.style.border = `2px solid ${persona.color}`;
+                core.textContent = persona.name[0];
+                
+                const label = document.createElement('div');
+                label.className = 'persona-label';
+                label.textContent = persona.name;
+                
+                node.appendChild(core);
+                node.appendChild(label);
+                
+                node.addEventListener('click', () => selectPersona(persona));
+                node.addEventListener('mouseenter', () => {
+                    node.style.transform = 'scale(1.2)';
+                    highlightConnections(persona.id);
+                });
+                node.addEventListener('mouseleave', () => {
+                    node.style.transform = 'scale(1)';
+                    resetConnections();
+                });
+                
+                constellation.appendChild(node);
+            });
+            
+            // Create connections
+            createConnections();
+        }
+        
+        function createConnections() {
+            const constellation = document.getElementById('constellation');
+            
+            // Clear existing connections
+            document.querySelectorAll('.connection-line').forEach(line => line.remove());
+            connections = [];
+            
+            // Create connections between related personas
+            const pairs = [
+                ['casual', 'social'],
+                ['hardcore', 'achiever'],
+                ['explorer', 'social'],
+                ['achiever', 'hardcore'],
+                ['explorer', 'casual']
+            ];
+            
+            pairs.forEach(([id1, id2]) => {
+                const persona1 = personas.find(p => p.id === id1);
+                const persona2 = personas.find(p => p.id === id2);
+                
+                const line = document.createElement('div');
+                line.className = 'connection-line';
+                
+                const dx = persona2.x - persona1.x;
+                const dy = persona2.y - persona1.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                line.style.width = distance + 'px';
+                line.style.left = (persona1.x + 40) + 'px';
+                line.style.top = (persona1.y + 40) + 'px';
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                constellation.appendChild(line);
+                connections.push({ line, from: id1, to: id2 });
+            });
+        }
+        
+        function selectPersona(persona) {
+            selectedPersona = persona;
+            document.getElementById('selected-persona').textContent = persona.name + ' Persona';
+            document.getElementById('engagement-val').textContent = persona.engagement + '%';
+            document.getElementById('engagement-bar').style.width = persona.engagement + '%';
+            document.getElementById('satisfaction-val').textContent = persona.satisfaction + '%';
+            document.getElementById('satisfaction-bar').style.width = persona.satisfaction + '%';
+            document.getElementById('frustration-val').textContent = persona.frustration + '%';
+            document.getElementById('frustration-bar').style.width = persona.frustration + '%';
+            
+            // Pulse effect
+            const node = document.getElementById(`persona-${persona.id}`);
+            node.classList.add('pulse');
+            setTimeout(() => node.classList.remove('pulse'), 2000);
+        }
+        
+        function highlightConnections(personaId) {
+            connections.forEach(conn => {
+                if (conn.from === personaId || conn.to === personaId) {
+                    conn.line.style.background = 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent)';
+                } else {
+                    conn.line.style.opacity = '0.2';
+                }
+            });
+        }
+        
+        function resetConnections() {
+            connections.forEach(conn => {
+                conn.line.style.background = 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)';
+                conn.line.style.opacity = '1';
+            });
+        }
+        
+        function simulateInteraction() {
+            totalInteractions++;
+            document.getElementById('total-interactions').textContent = totalInteractions;
+            
+            // Pick random personas for interaction
+            const from = personas[Math.floor(Math.random() * personas.length)];
+            const to = personas[Math.floor(Math.random() * personas.length)];
+            
+            if (from.id !== to.id) {
+                // Create particle animation
+                createParticle(from, to);
+                
+                // Update stats
+                from.engagement = Math.min(100, from.engagement + Math.random() * 5);
+                to.engagement = Math.min(100, to.engagement + Math.random() * 5);
+                
+                // Add message to stream
+                addMessage(from, to);
+            }
+            
+            // Update clustering quality
+            const quality = 0.7 + Math.random() * 0.25;
+            document.getElementById('cluster-quality').textContent = quality.toFixed(2);
+            
+            // Update selected persona if any
+            if (selectedPersona) {
+                selectPersona(selectedPersona);
+            }
+        }
+        
+        function createParticle(from, to) {
+            const constellation = document.getElementById('constellation');
+            const particle = document.createElement('div');
+            particle.className = 'data-particle';
+            particle.style.left = (from.x + 40) + 'px';
+            particle.style.top = (from.y + 40) + 'px';
+            particle.style.background = from.color;
+            
+            constellation.appendChild(particle);
+            
+            // Animate particle
+            const duration = 1000;
+            const startTime = Date.now();
+            
+            function animateParticle() {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+                
+                if (progress < 1) {
+                    const x = from.x + (to.x - from.x) * progress + 40;
+                    const y = from.y + (to.y - from.y) * progress + 40;
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.opacity = 1 - progress * 0.5;
+                    
+                    requestAnimationFrame(animateParticle);
+                } else {
+                    particle.remove();
+                }
+            }
+            
+            animateParticle();
+        }
+        
+        function addMessage(from, to) {
+            const stream = document.getElementById('message-stream');
+            const message = document.createElement('div');
+            message.className = 'message';
+            
+            const messages = [
+                `discovered pattern between personas`,
+                `shared behavioral trait identified`,
+                `correlation strength increased`,
+                `new insight extracted`,
+                `feedback loop detected`
+            ];
+            
+            const text = messages[Math.floor(Math.random() * messages.length)];
+            
+            message.innerHTML = `
+                <span class="message-persona">${from.name}</span> → 
+                <span class="message-persona">${to.name}</span>: ${text}
+            `;
+            
+            stream.appendChild(message);
+            
+            // Keep only last 10 messages
+            while (stream.children.length > 11) {
+                stream.children[1].remove();
+            }
+            
+            // Auto scroll
+            stream.scrollTop = stream.scrollHeight;
+        }
+        
+        function triggerReorganization() {
+            // Reorganize personas in constellation
+            personas.forEach((persona, index) => {
+                const angle = (index / personas.length) * Math.PI * 2;
+                const radius = 150 + Math.random() * 100;
+                
+                persona.x = 300 + Math.cos(angle) * radius;
+                persona.y = 300 + Math.sin(angle) * radius;
+                
+                const node = document.getElementById(`persona-${persona.id}`);
+                node.style.transition = 'all 1s ease';
+                node.style.left = persona.x + 'px';
+                node.style.top = persona.y + 'px';
+            });
+            
+            // Recreate connections after delay
+            setTimeout(createConnections, 1000);
+        }
+        
+        function addNewPersona() {
+            const newPersona = {
+                id: 'emerging' + personas.length,
+                name: 'Emerging',
+                color: '#' + Math.floor(Math.random()*16777215).toString(16),
+                x: 300 + (Math.random() - 0.5) * 400,
+                y: 300 + (Math.random() - 0.5) * 400,
+                engagement: Math.floor(Math.random() * 100),
+                satisfaction: Math.floor(Math.random() * 100),
+                frustration: Math.floor(Math.random() * 100)
+            };
+            
+            personas.push(newPersona);
+            
+            // Create new node
+            const constellation = document.getElementById('constellation');
+            const node = document.createElement('div');
+            node.className = 'persona-node';
+            node.id = `persona-${newPersona.id}`;
+            node.style.left = newPersona.x + 'px';
+            node.style.top = newPersona.y + 'px';
+            node.style.opacity = '0';
+            
+            const core = document.createElement('div');
+            core.className = 'persona-core';
+            core.style.background = `radial-gradient(circle, ${newPersona.color}88, ${newPersona.color}22)`;
+            core.style.border = `2px solid ${newPersona.color}`;
+            core.textContent = 'E';
+            
+            const label = document.createElement('div');
+            label.className = 'persona-label';
+            label.textContent = newPersona.name;
+            
+            node.appendChild(core);
+            node.appendChild(label);
+            
+            node.addEventListener('click', () => selectPersona(newPersona));
+            
+            constellation.appendChild(node);
+            
+            // Fade in
+            setTimeout(() => {
+                node.style.transition = 'opacity 1s ease';
+                node.style.opacity = '1';
+            }, 100);
+            
+            // Update count
+            document.getElementById('active-count').textContent = personas.length;
+        }
+        
+        function toggleAutoMode() {
+            autoMode = !autoMode;
+            const btn = document.getElementById('auto-btn');
+            btn.textContent = autoMode ? 'Stop Auto Mode' : 'Start Auto Mode';
+            
+            if (autoMode) {
+                autoInteract();
+            }
+        }
+        
+        function autoInteract() {
+            if (!autoMode) return;
+            
+            simulateInteraction();
+            
+            // Occasionally trigger events
+            if (Math.random() < 0.1) {
+                triggerReorganization();
+            }
+            
+            setTimeout(autoInteract, 500 + Math.random() * 2000);
+        }
+        
+        // Initialize
+        initConstellation();
+        
+        // Start with some interactions
+        setTimeout(() => {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => simulateInteraction(), i * 200);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
